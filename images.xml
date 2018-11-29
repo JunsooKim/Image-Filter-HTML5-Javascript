@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection>
+
+ <image>
+ <title>The Persistance of Memory</title>
+ <artist>Salvador Dalí</artist>
+ <year>1931</year>
+ <type>photo</type>
+ <fileName>The_Persistence_of_Memory.jpg</fileName>
+ </image>
+
+ <image>
+ <title>Starry Night</title>
+ <artist>Van Gogh</artist>
+ <year>1889</year>
+ <type>photo</type>
+ <fileName>Van-Gogh.-Starry-Night-469x376.jpg</fileName>
+ </image>
+
+ <image>
+ <title>Dog</title>
+ <artist>Jaleel Watler</artist>
+ <year>2015</year>
+ <type>photo</type>
+ <fileName>Juno3.JPG</fileName>
+ </image>
+
+ <image>
+ <title>Puppy</title>
+ <artist>Jaleel Watler</artist>
+ <year>2015</year>
+ <type>photo</type>
+ <fileName>Juno2.JPG</fileName>
+ </image>
+    
+ <image>
+ <title>Color Eye</title>
+ <artist>Claverham</artist>
+ <year>2012</year>
+ <type>Painting</type>
+ <fileName>coloreye.JPG</fileName>
+ </image>
+
+ <image>
+ <title>HSV Spectra</title>
+ <artist>Izmirli</artist>
+ <year>2017</year>
+ <type>photo</type>
+ <fileName>hsv_spectra.jpg</fileName>
+ </image>
+
+</collection>
