@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Image Analysis</title>
+    <meta charset="utf-8">
+    <meta name="description" content="Image Filtering">
+    <meta name="keywords" content="Image Filtering">
+    <link rel="stylesheet" href="HW4.css">
+    <script src="rgb-hsv_converter.js"></script>
+    <script type="text/javascript">
+//--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+        var sliderValue1 = 0.5;
+        var sliderValue2 = 0.5;
+        var sliderValue3 = 0.5;
+        var hsv = [0.5, 0.5, 0.5];
+
+        function draw() {
+            var canv=document.getElementById("myCanvas");
+            var c=canv.getContext("2d");
+            var img = new Image();
+            var dropdown = document.getElementById("mySelect");
+            var filename = dropdown.options[dropdown.selectedIndex];
+            var w, h;
+            var factor = 0.4;
+
+            img.onload = function(){
+                w = this.width *factor ;
+				h = this.height * factor;
+                var scalefactor;
+                
+                if (w > h){
+                    scalefactor = 280/w;
+                    w = 280;
+                    h = h*scalefactor;
+                }
+                
+                else{
+                    scalefactor = 280/h;
+                    h = 280;
+                    w = w*scalefactor;
+                }
+
+                canv.width = w;
+                canv.height = h;
+
+                c.drawImage(img, 0, 0, w, h );
+                Hue();
+                Saturation();
+                Value();
+                copyImage();
+            }
+            
+            complete_name = "Images/The_Persistence_of_Memory.jpg";
+            
+            if (filename != null){
+            name = filename.label;
+            complete_name = "Images/"+name;
+            }
+            
+            img.src = complete_name;
+        } 
+        
+        function pixelColor(imgd, x, y, r, g, b, a){
+                idx = (x + y*imgd.width)*4;
+                imgd.data[idx  ] = r;
+                imgd.data[idx+1] = g;
+                imgd.data[idx+2] = b;
+                imgd.data[idx+3] = a;
+        }
+        
+        function filter(){
+            var canv=document.getElementById("myCanvas");  // source canvas
+            var c=canv.getContext("2d");
+            var w = canv.width;
+            var h = canv.height;
+
+            var canv2=document.getElementById("myCanvas2"); // destination canvas
+            var c2=canv2.getContext("2d");
+            canv2.width = w;                                // match the two canvas dimensions
+            canv2.height = h;
+
+            var sourceImg = c.getImageData(0, 0, w, h);
+            var pix = sourceImg.data;
+            var destImg = c2.createImageData(w, h);
+            var pix2 = destImg.data;
+            
+            var hLim1 = (parseFloat(hsv[0]) - sliderValue1/4);
+            if (hLim1 < 0){
+                hLim1 = 0;
+            }
+            var hLim2 = (parseFloat(hsv[0]) + sliderValue1/4);
+            if (hLim2 > 1){
+                hLim2 = 1;
+            }
+            
+            var sLim1 = parseFloat(hsv[1]) - sliderValue2/4;
+            if (sLim1 < 0){
+                sLim1 = 0;
+            }
+            var sLim2 = parseFloat(hsv[1]) + sliderValue2/4;
+            if (sLim2 < 0){
+                sLim2 = 0;
+            }
+            var vLim1 = parseFloat(hsv[2]) - sliderValue3/4;
+            if (vLim1 < 0){
+                vLim1 = 0;
+            }
+            var vLim2 = parseFloat(hsv[2]) + sliderValue3/4;
+            if (vLim2 < 0){
+                vLim2 = 0;
+            }
+
+            for(var y=0; y<h; y++)          // copy and change color pixel by pixel
+                for (var x=0; x<w; x++){
+                    var idx = (w*y+x)*4;
+                    pixColor = rgbToHsv(pix[idx], pix[idx+1], pix[idx+2])
+                    
+                    if ((hLim1 <= pixColor[0] && pixColor[0] <= hLim2) && 
+                        (sLim1 <= pixColor[1] && pixColor[1] <= sLim2) && 
+                        (vLim1 <= pixColor[2] && pixColor[2] <= vLim2)){
+                        
+                        pix2[idx] = pix[idx];
+                        pix2[idx+1] = pix[idx+1];
+                        pix2[idx+2] = pix[idx+2];
+                        pix2[idx+3] = pix[idx+3];
+                    }
+                    else{
+                    pix2[idx] = 0;       // change color intensity
+                    pix2[idx+1] = 0;
+                    pix2[idx+2] = 0;
+                    pix2[idx+3] = 255;
+                    }
+                }
+            c2.putImageData(destImg, 0, 0);
+        }
+
+        // Copy image from the source canvas to the destination canvas; alter colors in the process
+        function copyImage(){
+            var canv=document.getElementById("myCanvas");  // source canvas
+            var c=canv.getContext("2d");
+            var w = canv.width;
+            var h = canv.height;
+
+            var canv2=document.getElementById("myCanvas2"); // destination canvas
+            var c2=canv2.getContext("2d");
+            canv2.width = w;                                // match the two canvas dimensions
+            canv2.height = h;
+
+            var sourceImg = c.getImageData(0, 0, w, h);
+            var pix = sourceImg.data;
+            var destImg = c2.createImageData(w, h);
+            var pix2 = destImg.data;
+            
+            for(var y=0; y<h; y++)          // copy and change color pixel by pixel
+                for (var x=0; x<w; x++){
+                    var idx = (w*y+x)*4;
+                        pix2[idx] = pix[idx];
+                        pix2[idx+1] = pix[idx+1];
+                        pix2[idx+2] = pix[idx+2];
+                        pix2[idx+3] = pix[idx+3];
+                  
+                }
+            c2.putImageData(destImg, 0, 0);
+            
+        }
+
+        function Saturation(){
+            var canv4=document.getElementById("myCanvasSaturation");  // source canvas
+            var c4=canv4.getContext("2d");
+            var w = canv4.width;
+            var h = canv4.height;
+            var satimg = c4.createImageData(w, h);
+            var satpix = satimg.data;
+            
+            for(var y=0; y<w; y++){
+                for (var x=0; x<h; x++){
+                    var rgbCol = hsvToRgb(hsv[0], y/h, 1);
+                    pixelColor(satimg,y, x, rgbCol[0], rgbCol[1], rgbCol[2], 255);
+                }
+            c4.putImageData(satimg, 0, 0);
+            }
+            
+            c4.beginPath();
+            c4.lineWidth=3; 
+            c4.strokeStyle = 'grey'
+            c4.lineCap='round'; 
+            c4.moveTo(hsv[1]*w,0);
+            c4.lineTo(hsv[1]*w,h);
+            c4.stroke();
+            
+            c4.beginPath();
+            c4.lineWidth=3; 
+            c4.strokeStyle = 'orange'
+            c4.lineCap='round'; 
+            x1 = (hsv[1]-(sliderValue2/4))*w;
+            if (x1/w < 0){
+                x1 = 0;
+            }
+            c4.moveTo(x1,0);
+            c4.lineTo(x1,h);
+            c4.stroke();
+            
+            c4.beginPath();
+            c4.lineWidth=3; 
+            c4.strokeStyle = 'black'
+            c4.lineCap='round';
+            x2 = (hsv[1]+(sliderValue2/4))*w;
+            if (x2/w > 1){
+                x2 = 1*w;
+            }
+            c4.moveTo(x2,0);
+            c4.lineTo(x2,h);
+            c4.stroke();
+            
+        }
+           
+        function Value(){
+            var canv5=document.getElementById("myCanvasValue");  // source canvas
+            var c5=canv5.getContext("2d");
+            var w = canv5.width;
+            var h = canv5.height;
+            var valimg = c5.createImageData(w, h);
+            var valpix = valimg.data;
+
+            
+            for(var y=0; y<w; y++)
+                for (var x=0; x<h; x++){
+                    var rgbCol = hsvToRgb(hsv[0], 1, y/h);
+                    pixelColor(valimg, y, x, rgbCol[0], rgbCol[1], rgbCol[2], 255);
+                }
+            c5.putImageData(valimg, 0, 0);
+            
+            c5.beginPath();
+            c5.lineWidth=3; 
+            c5.strokeStyle = 'grey'
+            c5.lineCap='round'; 
+            c5.moveTo(hsv[2]*w,0);
+            c5.lineTo(hsv[2]*w,h);
+            c5.stroke();
+            
+            c5.beginPath();
+            c5.lineWidth=3; 
+            c5.strokeStyle = 'orange'
+            c5.lineCap='round';
+            x1 = (hsv[2]-(sliderValue3/4))*w;
+            if (x1/w < 0){
+                x1 = 0;
+            }
+            c5.moveTo(x1,0);
+            c5.lineTo(x1,h);
+            c5.stroke();
+            
+            
+            c5.beginPath();
+            c5.lineWidth=3; 
+            c5.strokeStyle = 'black'
+            c5.lineCap='round'; 
+            x2 = (hsv[2]+(sliderValue3/4))*w;
+            if (x2/w > 1){
+                x2 = 1*w;
+            }
+            c5.moveTo(x2,0);
+            c5.lineTo(x2,h);
+            c5.stroke();
+        }
+
+        //The following function is used to obtain pixel color from the image
+        
+        function Hue(){
+            var canvH = document.getElementById("myCanvasHue");
+            var cH = canvH.getContext("2d");
+
+            var w = canvH.width;
+            var h = canvH.height;
+            var u;
+
+            function pixelColor(imgd, x, y, r, g, b, a, lw) {
+                for( var i=-lw; i<=lw; i++ )
+                    for( var j=-lw; j<=lw; j++ ){
+                        idx = ((x+i) + (y+j)*imgd.width)*4;
+                        imgd.data[idx  ] = r;
+                        imgd.data[idx+1] = g;
+                        imgd.data[idx+2] = b;
+                        imgd.data[idx+3] = a;
+                    }
+            }
+
+            var imgd = cH.createImageData(w, h);
+            var pix = imgd.data;
+
+            var x, y;
+            var r = 50;
+            for(var t=0.0; t<2*Math.PI; t+=0.01){
+                x = Math.round(r*Math.cos(t) + w/2);
+                y = Math.round(r*Math.sin(t) + h/2);
+                var rgbCol = hsvToRgb((t)/(Math.PI)/(2), 1, 1);
+                pixelColor(imgd, x, y, rgbCol[0], rgbCol[1], rgbCol[2], 255, 3);
+            }
+
+            cH.putImageData(imgd, 0, 0);;
+            
+            cH.beginPath();
+            cH.lineWidth=3; 
+            cH.strokeStyle = 'black'
+            cH.lineCap='round'; 
+            cH.moveTo(75,75);
+            cH.lineTo(Math.round((r*Math.cos(hsv[0]*6.3)+w/2)), Math.round((r*Math.sin(hsv[0]*6.3)+h/2)));
+            cH.stroke();
+            
+            
+            cH.beginPath();
+            cH.lineWidth=3; 
+            cH.strokeStyle = 'white'
+            cH.lineCap='round'; 
+            cH.moveTo(75,75);
+            cH.lineTo(Math.round(r*Math.cos((hsv[0]+(sliderValue1/4))*6.3) + w/2), Math.round(r*Math.sin((hsv[0]+(sliderValue1/4))*6.3) + h/2));
+            cH.stroke();
+            
+            cH.beginPath();
+            cH.lineWidth=3; 
+            cH.strokeStyle = 'orange'
+            cH.lineCap='round'; 
+            cH.moveTo(75,75);
+            cH.lineTo(Math.round(r*Math.cos((hsv[0]-(sliderValue1/4))*6.3) + w/2), Math.round(r*Math.sin((hsv[0]-(sliderValue1/4))*6.3) + h/2));
+            cH.stroke();
+            
+            
+            }
+        
+            
+        
+        function pick(event) {
+            var x = event.pageX - this.offsetLeft;
+            var y = event.pageY - this.offsetTop;
+            canv = document.getElementById("myCanvas");
+            var c=canv.getContext("2d");
+            var pixel = c.getImageData(x, y, 1, 1);
+            var data = pixel.data;
+            hsv = rgbToHsv(data[0], data[1], data[2]);
+            
+        }  
+
+        function setValue1(newValue){
+            sliderValue1 = newValue;
+            if( document.getElementById("slider1") )
+                Hue();
+        }
+        
+        function setValue2(newValue){
+            sliderValue2 = newValue;
+            if( document.getElementById("slider2"))
+                Saturation();
+        }
+        
+        function setValue3(newValue){
+            sliderValue3 = newValue;
+            if( document.getElementById("slider3"))
+                Value();
+        }
+        
+        function loadXMLDoc() {
+              var xhttp = new XMLHttpRequest();
+              xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                        var myobj = xhttp.responseXML;
+                        populate(myobj);
+                }
+              };
+              xhttp.open("GET", "images.xml", true);
+              xhttp.send();
+            }
+
+        function populate(object){
+            var i = 0;
+            var myobj = object;
+            var dropdown = document.getElementById("mySelect");
+            var x = myobj.getElementsByTagName("image");
+            for (i = 0; i<x.length; i++) {
+                 var option = document.createElement("option");
+                 option.text = myobj.getElementsByTagName("fileName")[i].childNodes[0].nodeValue;
+                 dropdown.add(option)
+            }
+        }    
+        
+    </script>
+</head>
+<body onload="draw(), loadXMLDoc()">
+<div id="wrapper">
+
+    <header id="top_header">
+        HSV Image Filters
+    </header>
+
+    <section id="main_section">
+        <article>
+
+            <header>
+                <hgroup>
+                    <h1>Image Select and Filter Settings</h1>
+                </hgroup>
+            </header>
+
+            <figure>
+                </figcaption>
+                    Hue
+                    <input type="range" id="slider1" min="0" max="1" value="0.5" step=".01" oninput='setValue1(this.value)'>
+                </figcaption>
+        
+            <canvas id="myCanvasHue" width="150" height="150" style="border:1px solid #BBBBBB;">       
+            </canvas>
+            </figure>
+
+            <figure>
+                </figcaption>
+                    Saturation
+                    <input type="range" id="slider2" min="0" max="1" value="0.5" step=".01" oninput='setValue2(this.value)'>
+                </figcaption>
+            <canvas id="myCanvasSaturation" width="150" height="150" style="border:1px solid #BBBBBB;">    
+            </canvas>
+            </figure>
+
+            <figure>
+                </figcaption>
+                    Value
+                    <input type="range" id="slider3" min="0" max="1" value="0.5" step=".01" oninput='setValue3(this.value)'>
+                </figcaption>
+            <canvas id="myCanvasValue" width="150" height="150" style="border:1px solid #BBBBBB;">    
+            </canvas>
+            </figure>
+
+            <figure>
+            <select id="mySelect" onchange="draw()">
+            </select>
+            </figure>
+
+            <figure>
+            <button type="button" id="buttons" onClick="filter()"> Filter</button>
+            </figure>
+
+        </article>
+
+        <article>
+            <canvas id="myCanvas" width="300" height="300" style="border:1px solid #BBBBBB;" onclick='Saturation(), Value(), Hue()'>    
+            </canvas>
+        </article>
+            
+        <article>
+             <canvas id="myCanvas2" width="300" height="300" style="border:1px solid #BBBBBB;">    
+            </canvas>
+        </article>
+    </section>
+
+
+   
+</div>
+
+<script>
+        canv = document.getElementById("myCanvas");
+        canv.addEventListener('mousedown', pick);
+</script>
+
+</body>
+</html>
